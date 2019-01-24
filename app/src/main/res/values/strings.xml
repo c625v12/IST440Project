@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MetaWear Android Starter</string>
+    <string name="title_connecting">Connecting</string>
+    <string name="title_reconnect_attempt">Reconnecting</string>
+    <string name="message_wait">Please wait</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="reset">Reset</string>
+    <string name="start_temperature">Start Temperature</string>
+    <string name="start_acceleration">Start Acceleration</string>
+    <string name="textview">TextView</string>
+    <string name="start_gyroscope">Start Gyroscope</string>
+    <string name="start_barometer">Start Barometer</string>
+    <string name="start_ambient_light">Start Ambient Light</string>
+
+</resources>
