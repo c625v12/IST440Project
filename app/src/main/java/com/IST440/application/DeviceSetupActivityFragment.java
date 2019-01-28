@@ -45,7 +45,6 @@ import bolts.Task;
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     private Accelerometer accelerometer;
 
-    Led led;
 
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
