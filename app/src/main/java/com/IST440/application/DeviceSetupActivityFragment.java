@@ -95,9 +95,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
-        accelerometer = metawear.getModule(Accelerometer.class);
-        accelerometer.configure()
-                .odr(60f).commit();
+
 
 
     }
@@ -112,15 +110,20 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         super.onViewCreated(view, savedInstanceState);
 
         view.findViewById(R.id.acc_start).setOnClickListener(v -> {
-            Log.i("Device", "Accel start");
+
+            accelerometer = metawear.getModule(Accelerometer.class);
+            accelerometer.configure()
+                    .odr(60f).commit();
+
+            Log.i("Accel", "Accel start");
             accelerometer.acceleration().addRouteAsync(source ->
                     source.map(Function1.RSS).average((byte) 4).filter(ThresholdOutput.BINARY, 0.5f)
                             .multicast().to().filter(Comparison.EQ, -1).stream((Subscriber) (data, env) ->
 
-                            Log.i("Device", "in free fall"))
+                            Log.i("Accel", "in free fall"))
                             .to().filter(Comparison.EQ, 1).stream((Subscriber) (data, env) ->
 
-                            Log.i("Device", "no free fall"))
+                            Log.i("Accel", "no free fall"))
                             .end()).continueWith((Continuation<Route, Void>) task -> {
                 accelerometer.acceleration().start();
                 accelerometer.start();
@@ -136,7 +139,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             ((Temperature.ExternalThermistor) temperature.findSensors(Temperature.SensorType.EXT_THERMISTOR)[0])
                     .configure((byte) 0, (byte) 1, false);
 
-            Log.i("Device", "Temp start");
+            Log.i("Temp", "Temp start");
 
             metawear.getModule(BarometerBosch.class).start();
             temperature.findSensors(Temperature.SensorType.BOSCH_ENV)[0].read();
@@ -144,7 +147,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
             tempSensor.addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
             {
-                Log.i("Device", "Temperature (C) = " + data.value(Float.class));
+                Log.i("Temp", "Temperature (C) = " + data.value(Float.class));
             }))
                     .continueWith((Continuation<Route, Void>) task -> {
                         tempSensor.read();
@@ -224,7 +227,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
                     magnetometer.magneticField().addRouteAsync(source ->
                             source.stream((Subscriber) (data, env) ->
-                                    Log.i("Mag", data.value(MagneticField.class).toString())))
+                                    Log.i("Magnetic", data.value(MagneticField.class).toString())))
                             .continueWith((Continuation<Route, Void>) task -> {
                         magnetometer.magneticField().start();
                         magnetometer.start();
@@ -246,10 +249,11 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                             .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
                             .commit();
 
+
                     sensorFusion.quaternion().addRouteAsync(source ->
                             source.stream((Subscriber) (data, env) ->
                             {
-                                Log.i("MainActivity", "Quaternion = " + data.value(Quaternion.class));
+                                Log.i("Quaternion", "Quaternion = " + data.value(Quaternion.class));
                             })).continueWith((Continuation<Route, Void>) task ->
                     {
                         sensorFusion.quaternion().start();
@@ -258,6 +262,34 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     });
 
                 });
+
+        view.findViewById(R.id.placeHolder).setOnClickListener(v -> {
+
+            final SensorFusionBosch sensorFusion = metawear.getModule(SensorFusionBosch.class);
+            final CancellationTokenSource cts = new CancellationTokenSource();
+
+
+            sensorFusion.configure()
+                    .mode(SensorFusionBosch.Mode.NDOF)
+                    .accRange(SensorFusionBosch.AccRange.AR_16G)
+                    .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
+                    .commit();
+
+            sensorFusion.linearAcceleration().addRouteAsync(source ->
+                    source.stream((Subscriber) (data, env) ->
+                    {
+                        Log.i("Place", "Not sure what this is supposed to do." + data.value(Accelerometer.class));
+
+                    })).continueWith((Continuation<Route, Void>) task ->
+
+                    {
+                        sensorFusion.linearAcceleration().start();
+                        sensorFusion.start();
+                        return null;
+                    });
+
+
+        });
 
         view.findViewById(R.id.setting).setOnClickListener(v -> {
 
@@ -279,7 +311,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             settings.battery().addRouteAsync(source ->
                     source.stream((Subscriber) (data, env) ->
                     {
-                Log.i("MainActivity", "battery state = " + data.value(Settings.BatteryState.class));
+                Log.i("Settings", "battery state = " + data.value(Settings.BatteryState.class));
             })).continueWith((Continuation<Route, Void>) task ->
             {
                 settings.battery().read();
@@ -294,12 +326,12 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
                     output = "Connected to power";
 
-                }
-                else{
+                }else{
                     output = "Disconnected from power";
                 }
-                Log.i("MainActivity", output);
+                Log.i("Settings", output);
                 return null;
+
             });
 
         });
