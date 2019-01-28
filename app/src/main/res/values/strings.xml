@@ -13,5 +13,8 @@
     <string name="start_gyroscope">Start Gyroscope</string>
     <string name="start_barometer">Start Barometer</string>
     <string name="start_ambient_light">Start Ambient Light</string>
+    <string name="sensor_fusion">Sensor Fusion</string>
+    <string name="start_magnetometer">Start Magnetometer</string>
+    <string name="settings">Settings</string>
 
 </resources>

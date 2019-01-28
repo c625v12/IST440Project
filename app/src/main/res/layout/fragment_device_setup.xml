@@ -53,14 +53,44 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/baro_start"/>
 
+    <Button
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_magnetometer" android:id="@+id/magnetometer_start"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/ambi_start"/>
+
+    <Button
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sensor_fusion" android:id="@+id/sensorFusion_start"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/magnetometer_start"/>
+
+
+
+
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/stop" android:id="@+id/acc_stop"
-        android:layout_below="@+id/ambi_start"
+        android:layout_below="@+id/sensorFusion_start"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
+
+    <Button
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings" android:id="@+id/setting"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/acc_stop"/>
 
 
 

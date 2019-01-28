@@ -26,16 +26,23 @@ import com.mbientlab.metawear.builder.filter.Comparison;
 import com.mbientlab.metawear.builder.filter.ThresholdOutput;
 import com.mbientlab.metawear.builder.function.Function1;
 import com.mbientlab.metawear.data.AngularVelocity;
+import com.mbientlab.metawear.data.MagneticField;
+import com.mbientlab.metawear.data.Quaternion;
+import com.mbientlab.metawear.data.*;
 import com.mbientlab.metawear.module.Accelerometer;
 import com.mbientlab.metawear.module.AmbientLightLtr329;
 import com.mbientlab.metawear.module.BarometerBosch;
 import com.mbientlab.metawear.module.GyroBmi160;
 import com.mbientlab.metawear.module.Led;
+import com.mbientlab.metawear.module.MagnetometerBmm150;
+import com.mbientlab.metawear.module.SensorFusionBosch;
+import com.mbientlab.metawear.module.Settings;
 import com.mbientlab.metawear.module.Temperature;
 
 import java.util.Locale;
 import java.util.Objects;
 
+import bolts.CancellationTokenSource;
 import bolts.Continuation;
 import bolts.Task;
 
@@ -161,6 +168,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                 return null;
             });
         });
+
         view.findViewById(R.id.baro_start).setOnClickListener(v -> {
 
             BarometerBosch baroBosch = metawear.getModule(BarometerBosch.class);
@@ -188,6 +196,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
 
         });
+
         view.findViewById(R.id.ambi_start).setOnClickListener(v -> {
 
 
@@ -204,10 +213,83 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                         alsLtr329.illuminance().start();
                         return null;
                     });
+        });
+
+        view.findViewById(R.id.magnetometer_start).setOnClickListener(v -> {
+
+                    final MagnetometerBmm150 magnetometer = metawear.getModule(MagnetometerBmm150.class);
+
+                    magnetometer.usePreset(MagnetometerBmm150.Preset.REGULAR);
+
+                    magnetometer.magneticField().addRouteAsync(source ->
+                            source.stream((Subscriber) (data, env) ->
+                                    Log.i("Mag", data.value(MagneticField.class).toString())))
+                            .continueWith((Continuation<Route, Void>) task -> {
+                        magnetometer.magneticField().start();
+                        magnetometer.start();
+                        return null;
+                    });
+                });
+
+        view.findViewById(R.id.sensorFusion_start).setOnClickListener(v -> {
 
 
+
+                    final SensorFusionBosch sensorFusion = metawear.getModule(SensorFusionBosch.class);
+                    final CancellationTokenSource cts = new CancellationTokenSource();
+
+
+                    sensorFusion.configure()
+                            .mode(SensorFusionBosch.Mode.NDOF)
+                            .accRange(SensorFusionBosch.AccRange.AR_16G)
+                            .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
+                            .commit();
+
+                    sensorFusion.quaternion().addRouteAsync(source ->
+                            source.stream((Subscriber) (data, env) ->
+                            {
+                                Log.i("MainActivity", "Quaternion = " + data.value(Quaternion.class));
+                            })).continueWith((Continuation<Route, Void>) task ->
+                    {
+                        sensorFusion.quaternion().start();
+                        sensorFusion.start();
+                        return null;
+                    });
+
+                });
+
+        view.findViewById(R.id.setting).setOnClickListener(v -> {
+
+            final Settings settings = metawear.getModule(Settings.class);
+
+            settings.editBleAdConfig()
+                    .deviceName("AntiWare")
+                    .txPower((byte) -4)
+                    .interval((short) 1024)
+                    .timeout((byte) 100)
+                    .commit();
+
+
+            settings.editBleConnParams()
+                    .minConnectionInterval(100f)
+                    .maxConnectionInterval(1024f)
+                    .commit();
+
+            settings.battery().addRouteAsync(source ->
+                    source.stream((Subscriber) (data, env) ->
+                    {
+                Log.i("MainActivity", "battery state = " + data.value(Settings.BatteryState.class));
+            })).continueWith((Continuation<Route, Void>) task ->
+            {
+                settings.battery().read();
+                return null;
+            });
 
         });
+
+
+
+
 
         view.findViewById(R.id.acc_stop).setOnClickListener(v -> {
             Log.i("Device", "stop");
