@@ -288,9 +288,9 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
             settings.readCurrentPowerStatusAsync().continueWith((Continuation<Byte, Void>) task -> {
 
-                Byte ghg = task.getResult();
+                Byte getBatteryConnectionStatus = task.getResult();
                 String output;
-                if(ghg == 1){
+                if(getBatteryConnectionStatus == 1){
 
                     output = "Connected to power";
 
