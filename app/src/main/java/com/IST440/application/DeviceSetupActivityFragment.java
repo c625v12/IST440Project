@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -282,6 +283,22 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             })).continueWith((Continuation<Route, Void>) task ->
             {
                 settings.battery().read();
+                return null;
+            });
+
+            settings.readCurrentPowerStatusAsync().continueWith((Continuation<Byte, Void>) task -> {
+
+                Byte ghg = task.getResult();
+                String output;
+                if(ghg == 1){
+
+                    output = "Connected to power";
+
+                }
+                else{
+                    output = "Disconnected from power";
+                }
+                Log.i("MainActivity", output);
                 return null;
             });
 
