@@ -35,6 +35,7 @@ import com.mbientlab.metawear.module.AmbientLightLtr329;
 import com.mbientlab.metawear.module.BarometerBosch;
 import com.mbientlab.metawear.module.GyroBmi160;
 import com.mbientlab.metawear.module.Led;
+import com.mbientlab.metawear.module.Logging;
 import com.mbientlab.metawear.module.MagnetometerBmm150;
 import com.mbientlab.metawear.module.SensorFusionBosch;
 import com.mbientlab.metawear.module.Settings;
@@ -47,18 +48,17 @@ import bolts.CancellationTokenSource;
 import bolts.Continuation;
 import bolts.Task;
 
-/**
- * A placeholder fragment containing a simple view.
- */
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     private Accelerometer accelerometer;
+    private MetaWearBoard metawear = null;
+    //final Logging logging = metawear.getModule(Logging.class);
 
 
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
     }
 
-    private MetaWearBoard metawear = null;
+
     private FragmentSettings settings;
 
 
@@ -114,7 +114,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             accelerometer = metawear.getModule(Accelerometer.class);
             accelerometer.configure()
                     .odr(60f).commit();
-
+            //logging.start(true);
             Log.i("Accel", "Accel start");
             accelerometer.acceleration().addRouteAsync(source ->
                     source.map(Function1.RSS).average((byte) 4).filter(ThresholdOutput.BINARY, 0.5f)
@@ -250,6 +250,18 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                             .commit();
 
 
+
+                    sensorFusion.eulerAngles().addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
+                    {
+                        Log.i("Euler", "Euler Angle = " + data.value(EulerAngles.class));
+                    })).continueWith((Continuation<Route, Void>) task ->
+            {
+                sensorFusion.eulerAngles().start();
+                sensorFusion.start();
+                return null;
+            });
+
+
                     sensorFusion.quaternion().addRouteAsync(source ->
                             source.stream((Subscriber) (data, env) ->
                             {
@@ -296,7 +308,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             final Settings settings = metawear.getModule(Settings.class);
 
             settings.editBleAdConfig()
-                    .deviceName("AntiWare")
+                    .deviceName("Travis Doesn't Do anything.")
                     .txPower((byte) -4)
                     .interval((short) 1024)
                     .timeout((byte) 100)
