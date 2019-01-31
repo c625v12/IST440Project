@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="Gradle: com.mbientlab.bletoolbox:scanner:0.2.3@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/scanner-0.2.3.aar/9b8d64776dc1909f8b65146f91bd4743/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/scanner-0.2.3.aar/9b8d64776dc1909f8b65146f91bd4743/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/scanner-0.2.3.aar/99665a038eb36ab265e30cdf8a2f0aff/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/scanner-0.2.3.aar/99665a038eb36ab265e30cdf8a2f0aff/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
