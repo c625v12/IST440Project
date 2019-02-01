@@ -71,14 +71,23 @@
 
     <Button
 
-        android:id="@+id/sensorFusion_start"
+        android:id="@+id/sensor_fusion_quaternion_start"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:text="@string/sensor_fusion"
+        android:text="@string/sensor_fusion_quaternion"
         android:textColor="@color/white"
         android:layout_weight="1"
         android:background="@drawable/green_button"/>
 
+    <Button
+
+        android:id="@+id/sensor_fusion_linear_acceleration_start"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/sensor_fusion_linear_acceleration"
+        android:layout_weight="1"
+        android:textColor="@color/white"
+        android:background="@drawable/green_button"/>
 
     <Button
         android:id="@+id/acc_stop"
@@ -89,19 +98,9 @@
         android:textColor="@color/white"
         android:background="@drawable/grey_button"/>
 
-    <!--<Button
-
-        android:id="@+id/placeHolder"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:text="@string/placeholder"
-        android:layout_weight="1"
-        android:textColor="@color/white"
-        android:background="@drawable/grey_button"/>
-!-->
     <ImageButton
 
-        android:id="@+id/setting"
+        android:id="@+id/settings"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:contentDescription="@string/settings"
