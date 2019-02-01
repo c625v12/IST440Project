@@ -12,17 +12,13 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.mbientlab.metawear.Data;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.Route;
 import com.mbientlab.metawear.Subscriber;
 import com.mbientlab.metawear.android.BtleService;
-import com.mbientlab.metawear.builder.RouteBuilder;
-import com.mbientlab.metawear.builder.RouteComponent;
 import com.mbientlab.metawear.builder.filter.Comparison;
 import com.mbientlab.metawear.builder.filter.ThresholdOutput;
 import com.mbientlab.metawear.builder.function.Function1;
@@ -34,31 +30,20 @@ import com.mbientlab.metawear.module.Accelerometer;
 import com.mbientlab.metawear.module.AmbientLightLtr329;
 import com.mbientlab.metawear.module.BarometerBosch;
 import com.mbientlab.metawear.module.GyroBmi160;
-import com.mbientlab.metawear.module.Led;
-import com.mbientlab.metawear.module.Logging;
 import com.mbientlab.metawear.module.MagnetometerBmm150;
 import com.mbientlab.metawear.module.SensorFusionBosch;
 import com.mbientlab.metawear.module.Settings;
 import com.mbientlab.metawear.module.Temperature;
 
-import java.util.Locale;
 import java.util.Objects;
 
 import bolts.CancellationTokenSource;
 import bolts.Continuation;
-import bolts.Task;
 
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     private Accelerometer accelerometer;
     private MetaWearBoard metawear = null;
     //final Logging logging = metawear.getModule(Logging.class);
-
-
-    public interface FragmentSettings {
-        BluetoothDevice getBtDevice();
-    }
-
-
     private FragmentSettings settings;
 
 
@@ -95,7 +80,6 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
-
 
 
     }
@@ -184,11 +168,11 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
             baroBosch.pressure().addRouteAsync(source ->
                     source.stream((Subscriber) (data, env) ->
-                    Log.i("Barometer", "Pressure (Pa) = " + data.value(Float.class))))
+                            Log.i("Barometer", "Pressure (Pa) = " + data.value(Float.class))))
                     .continueWith((Continuation<Route, Void>) task -> {
-                baroBosch.start();
-                return null;
-            });
+                        baroBosch.start();
+                        return null;
+                    });
             baroBosch.altitude().addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
             {
                 Log.i("Alt", "Altitude (m) = " + data.value(Float.class));
@@ -221,40 +205,38 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
         view.findViewById(R.id.magnetometer_start).setOnClickListener(v -> {
 
-                    final MagnetometerBmm150 magnetometer = metawear.getModule(MagnetometerBmm150.class);
+            final MagnetometerBmm150 magnetometer = metawear.getModule(MagnetometerBmm150.class);
 
-                    magnetometer.usePreset(MagnetometerBmm150.Preset.REGULAR);
+            magnetometer.usePreset(MagnetometerBmm150.Preset.REGULAR);
 
-                    magnetometer.magneticField().addRouteAsync(source ->
-                            source.stream((Subscriber) (data, env) ->
-                                    Log.i("Magnetic", data.value(MagneticField.class).toString())))
-                            .continueWith((Continuation<Route, Void>) task -> {
+            magnetometer.magneticField().addRouteAsync(source ->
+                    source.stream((Subscriber) (data, env) ->
+                            Log.i("Magnetic", data.value(MagneticField.class).toString())))
+                    .continueWith((Continuation<Route, Void>) task -> {
                         magnetometer.magneticField().start();
                         magnetometer.start();
                         return null;
                     });
-                });
+        });
 
-        view.findViewById(R.id.sensorFusion_start).setOnClickListener(v -> {
-
-
-
-                    final SensorFusionBosch sensorFusion = metawear.getModule(SensorFusionBosch.class);
-                    final CancellationTokenSource cts = new CancellationTokenSource();
+        view.findViewById(R.id.sensor_fusion_quaternion_start).setOnClickListener(v -> {
 
 
-                    sensorFusion.configure()
-                            .mode(SensorFusionBosch.Mode.NDOF)
-                            .accRange(SensorFusionBosch.AccRange.AR_16G)
-                            .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
-                            .commit();
+            final SensorFusionBosch sensorFusion = metawear.getModule(SensorFusionBosch.class);
+            final CancellationTokenSource cts = new CancellationTokenSource();
 
 
+            sensorFusion.configure()
+                    .mode(SensorFusionBosch.Mode.NDOF)
+                    .accRange(SensorFusionBosch.AccRange.AR_16G)
+                    .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
+                    .commit();
 
-                    sensorFusion.eulerAngles().addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
-                    {
-                        Log.i("Euler", "Euler Angle = " + data.value(EulerAngles.class));
-                    })).continueWith((Continuation<Route, Void>) task ->
+
+            sensorFusion.eulerAngles().addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
+            {
+                Log.i("Euler", "Euler Angle = " + data.value(EulerAngles.class));
+            })).continueWith((Continuation<Route, Void>) task ->
             {
                 sensorFusion.eulerAngles().start();
                 sensorFusion.start();
@@ -262,20 +244,20 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             });
 
 
-                    sensorFusion.quaternion().addRouteAsync(source ->
-                            source.stream((Subscriber) (data, env) ->
-                            {
-                                Log.i("Quaternion", "Quaternion = " + data.value(Quaternion.class));
-                            })).continueWith((Continuation<Route, Void>) task ->
+            sensorFusion.quaternion().addRouteAsync(source ->
+                    source.stream((Subscriber) (data, env) ->
                     {
-                        sensorFusion.quaternion().start();
-                        sensorFusion.start();
-                        return null;
-                    });
+                        Log.i("Quaternion", "Quaternion = " + data.value(Quaternion.class));
+                    })).continueWith((Continuation<Route, Void>) task ->
+            {
+                sensorFusion.quaternion().start();
+                sensorFusion.start();
+                return null;
+            });
 
-                });
+        });
 
-        view.findViewById(R.id.placeHolder).setOnClickListener(v -> {
+        view.findViewById(R.id.sensor_fusion_linear_acceleration_start).setOnClickListener(v -> {
 
             final SensorFusionBosch sensorFusion = metawear.getModule(SensorFusionBosch.class);
             final CancellationTokenSource cts = new CancellationTokenSource();
@@ -294,16 +276,16 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
                     })).continueWith((Continuation<Route, Void>) task ->
 
-                    {
-                        sensorFusion.linearAcceleration().start();
-                        sensorFusion.start();
-                        return null;
-                    });
+            {
+                sensorFusion.linearAcceleration().start();
+                sensorFusion.start();
+                return null;
+            });
 
 
         });
 
-        view.findViewById(R.id.setting).setOnClickListener(v -> {
+        view.findViewById(R.id.settings).setOnClickListener(v -> {
 
             final Settings settings = metawear.getModule(Settings.class);
 
@@ -323,8 +305,8 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             settings.battery().addRouteAsync(source ->
                     source.stream((Subscriber) (data, env) ->
                     {
-                Log.i("Settings", "battery state = " + data.value(Settings.BatteryState.class));
-            })).continueWith((Continuation<Route, Void>) task ->
+                        Log.i("Settings", "battery state = " + data.value(Settings.BatteryState.class));
+                    })).continueWith((Continuation<Route, Void>) task ->
             {
                 settings.battery().read();
                 return null;
@@ -334,11 +316,11 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
                 Byte getBatteryConnectionStatus = task.getResult();
                 String output;
-                if(getBatteryConnectionStatus == 1){
+                if (getBatteryConnectionStatus == 1) {
 
                     output = "Connected to power";
 
-                }else{
+                } else {
                     output = "Disconnected from power";
                 }
                 Log.i("Settings", output);
@@ -347,9 +329,6 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             });
 
         });
-
-
-
 
 
         view.findViewById(R.id.acc_stop).setOnClickListener(v -> {
@@ -367,6 +346,10 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
      */
     public void reconnected() {
 
+    }
+
+    public interface FragmentSettings {
+        BluetoothDevice getBtDevice();
     }
 }
 
