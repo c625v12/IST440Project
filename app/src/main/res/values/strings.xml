@@ -15,7 +15,6 @@
     <string name="start_ambient_light">Start Ambient Light</string>
     <string name="sensor_fusion">Sensor Fusion</string>
     <string name="start_magnetometer">Start Magnetometer</string>
-    <string name="settings">Settings</string>
     <string name="placeholder">PlaceHolder</string>
     <string name="barometer">Barometer</string>
     <string name="temperature">Temperature</string>
@@ -23,6 +22,10 @@
     <string name="ambient_light">Ambient Light</string>
     <string name="accelerometer">Accelerometer</string>
     <string name="magnetometer">Magnetometer</string>
+    <string name="linear_acceleration">Linear Acceleration</string>
+    <string name="quaternion">Quaternion</string>
+    <string name="sensor_fusion_linear_acceleration">Sensor Fusion: Linear Acceleration</string>
+    <string name="sensor_fusion_quaternion">Sensor Fusion: Quaternion</string>
     <string name="settings">Settings</string>
 
 </resources>
