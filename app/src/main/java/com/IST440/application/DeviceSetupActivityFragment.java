@@ -15,16 +15,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.mbientlab.metawear.CodeBlock;
+import com.mbientlab.metawear.Data;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.Route;
 import com.mbientlab.metawear.Subscriber;
 import com.mbientlab.metawear.android.BtleService;
+import com.mbientlab.metawear.builder.RouteBuilder;
+import com.mbientlab.metawear.builder.RouteComponent;
 import com.mbientlab.metawear.builder.filter.Comparison;
 import com.mbientlab.metawear.builder.filter.ThresholdOutput;
 import com.mbientlab.metawear.builder.function.Function1;
 import com.mbientlab.metawear.data.AngularVelocity;
 import com.mbientlab.metawear.data.MagneticField;
 import com.mbientlab.metawear.data.Quaternion;
+import com.mbientlab.metawear.data.Acceleration;
 import com.mbientlab.metawear.data.*;
 import com.mbientlab.metawear.module.Accelerometer;
 import com.mbientlab.metawear.module.AmbientLightLtr329;
@@ -34,17 +39,21 @@ import com.mbientlab.metawear.module.MagnetometerBmm150;
 import com.mbientlab.metawear.module.SensorFusionBosch;
 import com.mbientlab.metawear.module.Settings;
 import com.mbientlab.metawear.module.Temperature;
+import com.mbientlab.metawear.module.HumidityBme280;
+import com.mbientlab.metawear.module.Timer;
 
 import java.util.Objects;
 
 import bolts.CancellationTokenSource;
 import bolts.Continuation;
+import bolts.Task;
 
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     private Accelerometer accelerometer;
     private MetaWearBoard metawear = null;
-    //final Logging logging = metawear.getModule(Logging.class);
+
     private FragmentSettings settings;
+
 
 
     public DeviceSetupActivityFragment() {
@@ -143,7 +152,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         view.findViewById(R.id.gryo_start).setOnClickListener(v -> {
             final GyroBmi160 gyroBmi160 = metawear.getModule(GyroBmi160.class);
             gyroBmi160.configure()
-                    .odr(GyroBmi160.OutputDataRate.ODR_50_HZ)
+                    .odr(GyroBmi160.OutputDataRate.ODR_3200_HZ)
                     .range(GyroBmi160.Range.FSR_2000)
                     .commit();
             gyroBmi160.angularVelocity().addRouteAsync(source ->
@@ -159,23 +168,29 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
         view.findViewById(R.id.baro_start).setOnClickListener(v -> {
 
-            BarometerBosch baroBosch = metawear.getModule(BarometerBosch.class);
-            baroBosch.configure()
-                    .filterCoeff(BarometerBosch.FilterCoeff.AVG_16)
-                    .pressureOversampling(BarometerBosch.OversamplingMode.ULTRA_HIGH)
-                    .standbyTime(0.5f)
-                    .commit();
+                    BarometerBosch baroBosch = metawear.getModule(BarometerBosch.class);
 
-            baroBosch.pressure().addRouteAsync(source ->
-                    source.stream((Subscriber) (data, env) ->
-                            Log.i("Barometer", "Pressure (Pa) = " + data.value(Float.class))))
-                    .continueWith((Continuation<Route, Void>) task -> {
+                    baroBosch.configure()
+                            .filterCoeff(BarometerBosch.FilterCoeff.AVG_2)
+                            .pressureOversampling(BarometerBosch.OversamplingMode.ULTRA_HIGH)
+                            .standbyTime(3000.0f)
+                            .commit();
+
+
+                    baroBosch.pressure().addRouteAsync(source ->
+                            source.stream((Subscriber) (data, env) ->
+                            {
+                                Log.i("Barometer", "Pressure (Pa) = " + data.value(Float.class));
+
+                            })).continueWith((Continuation<Route, Void>) task -> {
                         baroBosch.start();
                         return null;
+
                     });
-            baroBosch.altitude().addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
-            {
-                Log.i("Alt", "Altitude (m) = " + data.value(Float.class));
+            baroBosch.altitude().addRouteAsync(source -> source.stream(
+                    (Subscriber) (data, env) -> {
+
+                Log.i("Altitude", "Altitude (m) = " + data.value(Float.class));
             })).continueWith((Continuation<Route, Void>) task -> {
                 baroBosch.altitude().start();
                 baroBosch.start();
@@ -183,7 +198,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             });
 
 
-        });
+                });
 
         view.findViewById(R.id.ambi_start).setOnClickListener(v -> {
 
@@ -192,7 +207,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             alsLtr329.configure()
                     .gain(AmbientLightLtr329.Gain.LTR329_8X)
                     .integrationTime(AmbientLightLtr329.IntegrationTime.LTR329_TIME_250MS)
-                    .measurementRate(AmbientLightLtr329.MeasurementRate.LTR329_RATE_50MS)
+                    .measurementRate(AmbientLightLtr329.MeasurementRate.LTR329_RATE_2000MS)
                     .commit();
 
             alsLtr329.illuminance().addRouteAsync(source ->
@@ -230,6 +245,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     .mode(SensorFusionBosch.Mode.NDOF)
                     .accRange(SensorFusionBosch.AccRange.AR_16G)
                     .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
+
                     .commit();
 
 
@@ -272,7 +288,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             sensorFusion.linearAcceleration().addRouteAsync(source ->
                     source.stream((Subscriber) (data, env) ->
                     {
-                        Log.i("Place", "Not sure what this is supposed to do." + data.value(Accelerometer.class));
+                        Log.i("Place", "Not sure what this is supposed to do." + data.value(Acceleration.class));
 
                     })).continueWith((Continuation<Route, Void>) task ->
 
