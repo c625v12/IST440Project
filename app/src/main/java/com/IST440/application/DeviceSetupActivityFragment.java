@@ -126,11 +126,13 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         });
 
         view.findViewById(R.id.temp_start).setOnClickListener(v -> {
+
             final Temperature temperature = metawear.getModule(Temperature.class);
             final Temperature.Sensor tempSensor = temperature.findSensors(Temperature.SensorType.PRESET_THERMISTOR)[0];
 
             ((Temperature.ExternalThermistor) temperature.findSensors(Temperature.SensorType.EXT_THERMISTOR)[0])
-                    .configure((byte) 0, (byte) 1, false);
+                    .configure((byte) 0, (byte) 6 , false);
+
 
             Log.i("Temp", "Temp start");
 
@@ -245,7 +247,6 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     .mode(SensorFusionBosch.Mode.NDOF)
                     .accRange(SensorFusionBosch.AccRange.AR_16G)
                     .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
-
                     .commit();
 
 
@@ -288,7 +289,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             sensorFusion.linearAcceleration().addRouteAsync(source ->
                     source.stream((Subscriber) (data, env) ->
                     {
-                        Log.i("Place", "Not sure what this is supposed to do." + data.value(Acceleration.class));
+                        Log.i("LinearAcc", "Linear Acceleration: " + data.value(Acceleration.class));
 
                     })).continueWith((Continuation<Route, Void>) task ->
 
